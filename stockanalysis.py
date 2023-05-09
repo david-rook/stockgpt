@@ -28,29 +28,23 @@ for ticker in tickers:
     data = yf.download(ticker, start=start_date, end=end_date)
 
     # Save price data to CSV
-    data.to_csv(f'{ticker}_price_data.csv')
+    #data.to_csv(f'{ticker}_price_data.csv')
 
     # Calculate technical indicators
     data['50_day_MA'] = ta.trend.SMAIndicator(data['Close'], 50).sma_indicator()
     data['200_day_MA'] = ta.trend.SMAIndicator(data['Close'], 200).sma_indicator()
     data['OBV'] = ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
     data['Acc/Dist'] = ta.volume.AccDistIndexIndicator(data['High'], data['Low'], data['Close'], data['Volume']).acc_dist_index()
-    
-    rsi = momentum.RSIIndicator(data['Close']).rsi()[-1]
-    
-    # Print the ticker and its RSI
-    #print(f"{ticker}: RSI = {rsi}")
+    rsi = momentum.RSIIndicator(data['Close']).rsi()[-1] 
+    adx = ta.trend.ADXIndicator(data['High'], data['Low'], data['Close']).adx()
 
     # Save technical indicators to CSV
     data[['50_day_MA', '200_day_MA', 'OBV', 'Acc/Dist']].to_csv(f'{ticker}_indicators.csv')
 
     latest = data['Close'].count()
-    #print(data['Close'][latest-1])
-    #print(data['50_day_MA'][latest-1])
-    #print(data['200_day_MA'][latest-1])
 
     # Loop through each ticker and send a request to the OpenAI API
-    prompt = f"If {ticker} is currently {(data['Close'][latest-1])}, has a 50 day SMA of {(data['50_day_MA'][latest-1])} a 200 day SMA of {(data['200_day_MA'][latest-1])} and an RSI of {rsi} Is this a bullish or bearish signal?"
+    prompt = f"If {ticker} is currently {(data['Close'][latest-1])}, has a 50 day SMA of {(data['50_day_MA'][latest-1])} a 200 day SMA of {(data['200_day_MA'][latest-1])} an RSI of {rsi} and an ADX of {adx} Is this a bullish, bearish or neutral trend?"
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=prompt,
@@ -73,9 +67,8 @@ for ticker in tickers:
     ax1.set_title(f'{ticker} Stock Price, 50-day MA, and 200-day MA')
     ax1.set_xlabel('Date')
     ax1.set_ylabel('Price')
-    ax1.text(0, -0.3, f"Analysis for {ticker}:\n\n{answer}", transform=plt.gca().transAxes)
-    #ax1.text(0, -0.3, f"\n{answer2}", transform=plt.gca().transAxes)
-    
+    ax1.text(0, -0.3, f"Analysis for {ticker}:\n\n{answer}", wrap=True, transform=plt.gca().transAxes)
+        
     # Plot On-Balance Volume
     ax2.plot(data.index, data['OBV'], label='On-Balance Volume')
     ax2.legend()
