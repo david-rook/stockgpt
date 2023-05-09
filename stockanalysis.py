@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 import ta
+from ta import momentum
 import openai
 from datetime import datetime, timedelta
 from fpdf import FPDF
@@ -34,17 +35,22 @@ for ticker in tickers:
     data['200_day_MA'] = ta.trend.SMAIndicator(data['Close'], 200).sma_indicator()
     data['OBV'] = ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
     data['Acc/Dist'] = ta.volume.AccDistIndexIndicator(data['High'], data['Low'], data['Close'], data['Volume']).acc_dist_index()
+    
+    rsi = momentum.RSIIndicator(data['Close']).rsi()[-1]
+    
+    # Print the ticker and its RSI
+    #print(f"{ticker}: RSI = {rsi}")
 
     # Save technical indicators to CSV
     data[['50_day_MA', '200_day_MA', 'OBV', 'Acc/Dist']].to_csv(f'{ticker}_indicators.csv')
 
     latest = data['Close'].count()
-    print(data['Close'][latest-1])
-    print(data['50_day_MA'][latest-1])
-    print(data['200_day_MA'][latest-1])
+    #print(data['Close'][latest-1])
+    #print(data['50_day_MA'][latest-1])
+    #print(data['200_day_MA'][latest-1])
 
     # Loop through each ticker and send a request to the OpenAI API
-    prompt = f"If {ticker} is currently {(data['Close'][latest-1])}, has a 50 day SMA of {(data['50_day_MA'][latest-1])} and a 200 day SMA of {(data['200_day_MA'][latest-1])} Is this a bullish or bearish signal?"
+    prompt = f"If {ticker} is currently {(data['Close'][latest-1])}, has a 50 day SMA of {(data['50_day_MA'][latest-1])} a 200 day SMA of {(data['200_day_MA'][latest-1])} and an RSI of {rsi} Is this a bullish or bearish signal?"
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt=prompt,
@@ -58,20 +64,6 @@ for ticker in tickers:
     answer = response.choices[0].text.strip()
     print(f"{ticker}: {answer}")
     
-    prompt = f"If a stock currently has a 50 day SMA of {(data['50_day_MA'][latest-1])} and a 200 day SMA of {(data['200_day_MA'][latest-1])} Is this a bullish, bearish or neutral signal?"
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=3800,
-        n=1,
-        stop=None,
-        temperature=0.7,
-    )
-
-    # Extract the answer from the API response and print it
-    answer2 = response.choices[0].text.strip()
-    print(f"{ticker}: {answer2}")
-
     # Plot stock price, 50-day MA, and 200-day MA
     fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, figsize=(10, 15), dpi=100)
     ax1.plot(data.index, data['Close'], label='Close Price')
@@ -81,7 +73,7 @@ for ticker in tickers:
     ax1.set_title(f'{ticker} Stock Price, 50-day MA, and 200-day MA')
     ax1.set_xlabel('Date')
     ax1.set_ylabel('Price')
-    ax1.text(0, -0.3, f"Analysis for {ticker}:\n\n{answer}\n{answer2}", transform=plt.gca().transAxes)
+    ax1.text(0, -0.3, f"Analysis for {ticker}:\n\n{answer}", transform=plt.gca().transAxes)
     #ax1.text(0, -0.3, f"\n{answer2}", transform=plt.gca().transAxes)
     
     # Plot On-Balance Volume
