@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from fpdf import FPDF
 
 # Replace your_api_key with your actual OpenAI API key
-openai.api_key = "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"
+openai.api_key = ""
 
 # Read stock tickers from file
 with open('stock_tickers.txt', 'r') as file:
