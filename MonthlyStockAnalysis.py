@@ -3,7 +3,7 @@ import pandas as pd
 from yahoo_fin import stock_info
 
 # Replace your_api_key with your actual OpenAI API key
-openai.api_key = ""
+openai.api_key = "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"
 
 ticker = 'AAPL'
 analyst_info = stock_info.get_analysts_info(ticker)
