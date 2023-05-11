@@ -86,5 +86,6 @@ for ticker in tickers:
     pdf.image(f'{ticker}_charts.png', x=10, y=20, w=190, h=250)
     
 # Save the PDF
-
-pdf.output("stock_charts.pdf") #add date to this file name
+current_date = datetime.today()
+formatted_date = current_date.strftime("%d-%m-%Y")
+pdf.output(f"{formatted_date} stock_charts.pdf")
