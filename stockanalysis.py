@@ -27,9 +27,6 @@ for ticker in tickers:
     # Get price data
     data = yf.download(ticker, start=start_date, end=end_date)
 
-    # Save price data to CSV
-    #data.to_csv(f'{ticker}_price_data.csv')
-
     # Calculate technical indicators
     data['50_day_MA'] = ta.trend.SMAIndicator(data['Close'], 50).sma_indicator()
     data['200_day_MA'] = ta.trend.SMAIndicator(data['Close'], 200).sma_indicator()
@@ -37,9 +34,6 @@ for ticker in tickers:
     data['Acc/Dist'] = ta.volume.AccDistIndexIndicator(data['High'], data['Low'], data['Close'], data['Volume']).acc_dist_index()
     rsi = momentum.RSIIndicator(data['Close']).rsi()[-1] 
     adx = ta.trend.ADXIndicator(data['High'], data['Low'], data['Close']).adx()
-
-    # Save technical indicators to CSV
-    data[['50_day_MA', '200_day_MA', 'OBV', 'Acc/Dist']].to_csv(f'{ticker}_indicators.csv')
 
     latest = data['Close'].count()
 
