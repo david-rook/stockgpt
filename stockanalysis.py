@@ -2,13 +2,14 @@ import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 import ta
+import os
 from ta import momentum
 import openai
 from datetime import datetime, timedelta
 from fpdf import FPDF
 
-# Replace your_api_key with your actual OpenAI API key
-openai.api_key = ""
+# Put your OpenAI API key to the OPENAI_API_KEY environment variable
+openai.api_key = os.environ.get('OPENAI_API_KEY', '')
 
 # Read stock tickers from file
 with open('stock_tickers.txt', 'r') as file:
